@@ -114,3 +114,32 @@ func Test_ParamMatching(t *testing.T) {
 		})
 	}
 }
+
+
+func Test_TxID(t *testing.T) {
+	tests := []struct {
+		name     string
+		event    StreamrEvent
+		expected string
+	}{
+		{
+			name: "Valid Input",
+			event: StreamrEvent{
+				Values:       nil,
+				TargetDBID:   "",
+				TargetProcedure: "",
+				Timestamp:   1630000000, // Example timestamp
+				SequenceID:  100,        // Example sequence ID
+				MsgChainID:  "12345",    // Example MsgChainID
+			},
+			expected: "80d327610000000064000000000000003132333435e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.event.TxID()
+			require.Equal(t, tt.expected, result, "TxID should match expected value")
+		})
+	}
+}

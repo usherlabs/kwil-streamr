@@ -7,13 +7,13 @@
         "environment": "polygon",
         "logLevel": "debug",
         "contracts": {
-            "streamRegistryChainRPCs": {
-                "chainId": 137,
-                "rpcs": [{
-                    "url": "https://rpc.ankr.com/polygon", 
-                    "timeout": 120000
-                }]
-            }
+            "ethereumNetwork": {
+                "chainId": 137
+            },
+            "rpcs": [{
+                "url": "https://rpc.ankr.com/polygon", 
+                "timeout": 120000
+            }]
         }
     },
     "plugins": {

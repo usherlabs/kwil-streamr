@@ -120,3 +120,90 @@ func Test_ParseEvent(t *testing.T) {
 		})
 	}
 }
+
+func TestSetConfig(t *testing.T) {
+	type testcase struct {
+		name         string
+		data         map[string]string
+		errorMessage string
+		wantErr      bool
+	}
+
+	tests := []testcase{
+		{
+			name: "valid",
+			data: map[string]string{
+				"node":             "ws://example.com",
+				"api_key":          "",
+				"max_reconnects":   "5",
+				"stream":           "test_stream",
+				"target_db":        "0x1A58f48A0369656015D6BE305a3716F84F979A86:dimo_weather",
+				"target_procedure": "procedure_name",
+				"input_mappings":   "param1:key1,param2:key2.key2.1",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid data_type for max_reconnects",
+			data: map[string]string{
+				"node":             "ws://example.com",
+				"api_key":          "",
+				"max_reconnects":   "x",
+				"stream":           "test_stream",
+				"target_db":        "0x1A58f48A0369656015D6BE305a3716F84F979A86:dimo_weather",
+				"target_procedure": "procedure_name",
+				"input_mappings":   "param1:key1,param2:key2.key2.1",
+			},
+			wantErr: true,
+			errorMessage: "invalid max_reconnects config: strconv.ParseInt: parsing \"x\": invalid syntax",
+		},
+		{
+			name: "invalid structure for target_db",
+			data: map[string]string{
+				"node":             "ws://example.com",
+				"api_key":          "",
+				"max_reconnects":   "5",
+				"stream":           "nnn",
+				"target_db":        "deployer_address:db_name",
+				"target_procedure": "procedure_name",
+				"input_mappings":   "param1:key1,param2:key2.key2.1",
+			},
+			wantErr: true,
+			errorMessage: "invalid deployer address in target_db config: encoding/hex: invalid byte: U+0070 'p'",
+		},
+		{
+			name: "invalid structure for target_db",
+			data: map[string]string{
+				"node":             "ws://example.com",
+				"api_key":          "",
+				"max_reconnects":   "5",
+				"stream":           "nnn",
+				"target_db":        "0x1A58f48A0369656015D6BE305a3716F84F979A86:db_name",
+				"target_procedure": "procedure_name",
+				"input_mappings":   "param1,key11,",
+			},
+			wantErr: true,
+			errorMessage: "invalid input mapping: param1",
+		},
+		{
+			name: "invalid prop",
+			data: map[string]string{
+				"api_key": "12345",
+			},
+			errorMessage: "missing required Streamr node URL config",
+			wantErr:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := (&listenerConfig{}).setConfig(tt.data)
+			if tt.wantErr {
+				require.Error(t, err)
+				require.Equal(t, tt.errorMessage, err.Error())
+				return
+			}
+			require.Nil(t, err)
+		})
+	}
+}
